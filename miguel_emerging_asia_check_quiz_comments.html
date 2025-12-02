@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Miguel's Länderanalyse – Check-Quiz + Comments</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #f9fafb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .app {
+      width: 100%;
+      max-width: 880px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .brand-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .brand-sub {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: radial-gradient(circle at top, #111827, #020617);
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-bottom: 14px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.5fr);
+      gap: 14px;
+    }
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .card {
+      background: radial-gradient(circle at top, #0f172a, #020617);
+      border-radius: 18px;
+      padding: 18px 16px 14px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+      border: 1px solid #1f2937;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tag-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .pill {
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: rgba(15,23,42,0.9);
+      font-size: 0.75rem;
+    }
+    .counter {
+      font-size: 0.8rem;
+    }
+    .status-pill {
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid transparent;
+    }
+    .status-none { display: none; }
+    .status-correct {
+      display: inline-block;
+      background: rgba(22,163,74,0.15);
+      border-color: #16a34a;
+      color: #bbf7d0;
+    }
+    .status-partial {
+      display: inline-block;
+      background: rgba(234,179,8,0.15);
+      border-color: #eab308;
+      color: #facc15;
+    }
+    .status-wrong {
+      display: inline-block;
+      background: rgba(239,68,68,0.15);
+      border-color: #ef4444;
+      color: #fecaca;
+    }
+    .question {
+      font-size: 1rem;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79,70,229,0.5);
+    }
+    .label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+    .result {
+      font-size: 0.9rem;
+      line-height: 1.4;
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: none;
+      margin-top: 4px;
+    }
+    .result.visible { display: block; }
+    .result.correct {
+      background: rgba(22,163,74,0.12);
+      border: 1px solid #16a34a;
+      color: #bbf7d0;
+    }
+    .result.partial {
+      background: rgba(234,179,8,0.1);
+      border: 1px solid #eab308;
+      color: #facc15;
+    }
+    .result.wrong {
+      background: rgba(248,113,113,0.13);
+      border: 1px solid #ef4444;
+      color: #fecaca;
+    }
+    .solution {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+    }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    button {
+      flex: 1;
+      padding: 9px 10px;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
+      transition: background 0.15s, transform 0.1s, border-color 0.15s;
+    }
+    button.primary {
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      border-color: transparent;
+      color: white;
+    }
+    button.accent {
+      background: linear-gradient(135deg, #22c55e, #14b8a6);
+      border-color: transparent;
+      color: #ecfdf5;
+    }
+    button.small {
+      flex: 0;
+      padding-inline: 10px;
+      font-size: 0.75rem;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    .hint {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+    ul {
+      margin-left: 18px;
+      margin-top: 6px;
+    }
+    .score-row {
+      display: flex;
+      gap: 10px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .score-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: rgba(15,23,42,0.9);
+    }
+    .score-pill span { font-weight: 600; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.98);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+    }
+    .setup-card {
+      background: radial-gradient(circle at top, #0b1120, #020617);
+      border-radius: 18px;
+      padding: 18px 16px 14px;
+      border: 1px solid #1f2937;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+    }
+    .setup-title {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .setup-row {
+      margin-top: 10px;
+      margin-bottom: 6px;
+    }
+    input[type="text"] {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79,70,229,0.5);
+    }
+    .avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .avatar-option {
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 6px 4px;
+      text-align: center;
+      border: 1px solid #1f2937;
+      background: radial-gradient(circle at top, #020617, #020617);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      color: #9ca3af;
+      transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+    }
+    .avatar-option span.emoji {
+      font-size: 1.6rem;
+    }
+    .avatar-option.selected {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79,70,229,0.5);
+      transform: translateY(-1px);
+      background: radial-gradient(circle at top, #111827, #020617);
+      color: #e5e7eb;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.5fr);
+      gap: 14px;
+    }
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .comments-card {
+      background: radial-gradient(circle at top, #020617, #020617);
+      border-radius: 18px;
+      padding: 14px 12px 10px;
+      border: 1px solid #1f2937;
+      max-height: 540px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .comments-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .comments-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .comment-info {
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+    .summary-box {
+      font-size: 0.8rem;
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px dashed #374151;
+      background: rgba(15,23,42,0.9);
+    }
+    .summary-box strong { font-weight: 600; }
+    .comment-form {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .comment-list {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #111827;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .comment-item {
+      display: flex;
+      gap: 8px;
+      padding: 6px 4px;
+      border-radius: 10px;
+      border: 1px solid #111827;
+      background: rgba(15,23,42,0.9);
+      margin-bottom: 6px;
+    }
+    .comment-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      background: radial-gradient(circle at top, #111827, #020617);
+      flex-shrink: 0;
+    }
+    .comment-body {
+      font-size: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .comment-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .comment-name {
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .comment-score {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+    .comment-text {
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      margin-top: 2px;
+      white-space: pre-wrap;
+    }
+    .comment-timestamp {
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="brand-title">Miguel's Länderanalyse</div>
+        <div class="brand-sub">Emerging Asia • Check-Quiz mit Kommentaren</div>
+      </div>
+      <div class="badge">HRW • WS 25/26</div>
+    </header>
+    <p class="subtitle">
+      Vor dem Quiz Namen und Avatar wählen. Am Ende kannst du mit Score einen Kommentar hinterlassen – nice für dich & Kommilitonen.
+    </p>
+
+    <div class="layout">
+      <div>
+        <div class="score-row">
+          <div class="score-pill">✅ Richtig: <span id="scoreCorrect">0</span></div>
+          <div class="score-pill">🟡 Teilweise: <span id="scorePartial">0</span></div>
+          <div class="score-pill">❌ Falsch: <span id="scoreWrong">0</span></div>
+        </div>
+
+        <div class="card" id="quizCard">
+          <div>
+            <div class="tag-row">
+              <span class="pill" id="topicPill">Thema</span>
+              <span class="counter" id="counter">1 / 1</span>
+              <span class="status-pill status-none" id="statusPill"></span>
+            </div>
+            <div class="question" id="questionText"></div>
+          </div>
+
+          <div>
+            <div class="label">Deine Antwort:</div>
+            <textarea id="userAnswer" placeholder="Schreib deine Definition/Erklärung hier rein..."></textarea>
+          </div>
+
+          <div>
+            <button class="primary" id="checkBtn">Prüfen</button>
+            <div class="result" id="resultBox">
+              <div id="resultText"></div>
+              <div class="solution">
+                Musterlösung:<br>
+                <span id="solutionText"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button id="prevBtn">⟵ Zurück</button>
+            <button id="clearBtn">Antwort löschen</button>
+            <button id="nextBtn">Weiter ⟶</button>
+            <button class="small" id="shuffleBtn">🔀 Shuffle</button>
+          </div>
+
+          <div class="controls" style="margin-top:4px;">
+            <button class="accent" id="finishBtn">Quiz beenden & kommentieren</button>
+          </div>
+
+          <p class="hint">
+            Tipp: Nutze Fachbegriffe („Übergang“, „Industrieland“, „FDI“, „Soft Power“ usw.) – genau darauf achtet der Checker.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <div class="comments-card">
+          <div class="comments-header">
+            <div>
+              <div class="comments-title">Kommentare zum Quiz</div>
+              <div class="comment-info" id="userInfoText"></div>
+            </div>
+          </div>
+
+          <div class="summary-box" id="summaryBox">
+            <strong>Dein aktueller Score:</strong>
+            <div>✅ Richtig: <span id="sumCorrect">0</span> • 🟡 Teilweise: <span id="sumPartial">0</span> • ❌ Falsch: <span id="sumWrong">0</span></div>
+            <div style="margin-top:4px;font-size:0.75rem;color:#9ca3af;">
+              Wenn du zufrieden bist, schreib unten einen kurzen Kommentar (z. B. wie schwer es war, was noch unklar ist etc.).
+            </div>
+          </div>
+
+          <form class="comment-form" id="commentForm">
+            <textarea id="commentInput" rows="3" placeholder="Dein Kommentar zum Quiz (z. B. „Fragen zu Soft Power fand ich schwer“)..."></textarea>
+            <button type="submit" class="primary">Kommentar mit Score posten</button>
+          </form>
+
+          <div class="comment-list" id="commentList">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="setupOverlay">
+    <div class="setup-card">
+      <div class="setup-title">Bevor es losgeht 🔑</div>
+      <p class="subtitle" style="margin-bottom:6px;">
+        Wähle einen Namen & ein Avatar-Face – so sieht man später, wer kommentiert hat.
+      </p>
+
+      <div class="setup-row">
+        <div class="label">Dein Name (für Kommentare):</div>
+        <input type="text" id="nameInput" placeholder="z. B. Miguel" />
+      </div>
+
+      <div class="setup-row">
+        <div class="label">Wähle ein Anime-Style Avatar 😈</div>
+        <div class="avatar-grid" id="avatarGrid">
+          <div class="avatar-option selected" data-index="0">
+            <span class="emoji">😼</span>
+            <span>Tryhard Cat</span>
+          </div>
+          <div class="avatar-option" data-index="1">
+            <span class="emoji">😈</span>
+            <span>Villain Arc</span>
+          </div>
+          <div class="avatar-option" data-index="2">
+            <span class="emoji">🤓</span>
+            <span>Study Demon</span>
+          </div>
+          <div class="avatar-option" data-index="3">
+            <span class="emoji">😴</span>
+            <span>Sleepy Pro</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-row" style="margin-top:12px;">
+        <button class="primary" id="startQuizBtn">Quiz starten</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = []; // placeholder, will be filled below
+  </script>
+</body>
+</html>
